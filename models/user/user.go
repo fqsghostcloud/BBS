@@ -1,6 +1,7 @@
 package user
 
 import (
+	"bbs/models/types"
 	"fmt"
 	"time"
 
@@ -34,6 +35,24 @@ func (u *User) TableName() string {
 	return "user"
 }
 
+func (u *User) Signup(username, password string) (bool, error) {
+	if u.ExsitUser(username) {
+		return false, fmt.Errorf("%s", types.UsernameExErr)
+	}
+
+	user := new(User)
+	user.Name = username
+	user.Password = password
+
+	o := orm.NewOrm()
+	_, err := o.Insert(user)
+	if err != nil {
+		return false, err
+	}
+
+	return true, nil
+}
+
 // Auth is check username and auth password
 func (u *User) Auth(username, password string) (bool, error) {
 	user, err := u.GetByUsername(username)
@@ -42,7 +61,17 @@ func (u *User) Auth(username, password string) (bool, error) {
 		return false, err
 	}
 
-	return u.AuthPassword(user, password), nil
+	IsActive, err := u.IsActive(username)
+	if err != nil {
+		glog.Errorf("auth user is active error[%s]", err.Error())
+		return false, err
+	}
+
+	if IsActive {
+		return u.AuthPassword(user, password), nil
+	}
+
+	return false, nil
 
 }
 
@@ -50,10 +79,24 @@ func (u *User) AuthPassword(user *User, password string) bool {
 	return user.Password == password
 }
 
+func (u *User) IsActive(username string) (bool, error) {
+	user := new(User)
+
+	o := orm.NewOrm()
+	qs := o.QueryTable(u.TableName())
+	err := qs.Filter("Name", username).Filter("Active").One(user)
+
+	if err != nil {
+		return false, err
+	}
+
+	return user.Active == true, nil
+}
+
 func (u *User) GetByUsername(username string) (*User, error) {
 	var user User
 	o := orm.NewOrm()
-	qs := o.QueryTable("user")
+	qs := o.QueryTable(u.TableName)
 	err := qs.Filter("Name", username).One(&user)
 
 	if err != nil {
@@ -65,7 +108,7 @@ func (u *User) GetByUsername(username string) (*User, error) {
 
 func (u *User) ExsitUser(username string) bool {
 	o := orm.NewOrm()
-	qs := o.QueryTable("user")
+	qs := o.QueryTable(u.TableName())
 	return qs.Filter("Name", username).Exist()
 }
 
