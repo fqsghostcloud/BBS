@@ -2,6 +2,7 @@ package user
 
 import (
 	"bbs/controllers"
+	"bbs/models/types"
 	"bbs/models/user"
 	"net/http"
 
@@ -29,11 +30,14 @@ func (c *LoginController) Post() {
 	if err != nil {
 		if err == orm.ErrNoRows {
 			data["info"] = "用户不存在"
-			c.serverOk(data)
+			c.ServerOk(data)
+		} else if err.Error() == types.UserLogForbidden {
+			data["info"] = types.UserLogForbidden
+			c.ServerOk(data)
 		} else {
 			glog.Errorf("auth username[%s], password[%s], error[%s]\n", username, password, err.Error())
 			data["error"] = "登录过程中发生错误, 登录失败!"
-			c.serverError(data, http.StatusBadRequest)
+			c.ServerError(data, http.StatusBadRequest)
 		}
 
 		return
@@ -50,6 +54,6 @@ func (c *LoginController) Post() {
 		glog.Infof("login faild username[%s], password[%s]\n", username, password)
 		data["info"] = "登录失败,密码错误"
 	}
-	c.serverOk(data)
+	c.ServerOk(data)
 	return
 }

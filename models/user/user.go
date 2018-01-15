@@ -71,7 +71,7 @@ func (u *User) Auth(username, password string) (bool, error) {
 		return u.AuthPassword(user, password), nil
 	}
 
-	return false, nil
+	return false, fmt.Errorf("%s", types.UserLogForbidden)
 
 }
 
@@ -84,7 +84,7 @@ func (u *User) IsActive(username string) (bool, error) {
 
 	o := orm.NewOrm()
 	qs := o.QueryTable(u.TableName())
-	err := qs.Filter("Name", username).Filter("Active").One(user)
+	err := qs.Filter("Name", username).One(user)
 
 	if err != nil {
 		return false, err
@@ -96,7 +96,7 @@ func (u *User) IsActive(username string) (bool, error) {
 func (u *User) GetByUsername(username string) (*User, error) {
 	var user User
 	o := orm.NewOrm()
-	qs := o.QueryTable(u.TableName)
+	qs := o.QueryTable(u.TableName())
 	err := qs.Filter("Name", username).One(&user)
 
 	if err != nil {
