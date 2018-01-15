@@ -20,10 +20,15 @@ func (s *SignupController) Get() {
 func (s *SignupController) Post() {
 	username := s.GetString("username")
 	password := s.GetString("password")
+	email := s.GetString("email")
 
 	data := map[string]interface{}{}
 	dbUser := user.User{}
-	ok, err := dbUser.Signup(username, password)
+	dbUser.Name = username
+	dbUser.Password = password
+	dbUser.Email = email
+
+	ok, err := dbUser.Signup(&dbUser)
 	if err != nil {
 		if err.Error() == types.UsernameExErr {
 			data["info"] = err.Error()

@@ -14,8 +14,10 @@ import (
 type User struct {
 	Id         int       `orm:"pk;auto"`
 	Name       string    `orm:"unique;size(100)"`
-	Password   string    `orm:"size(100)"` // 类型大小？
+	Password   string    `orm:"size(100)"` // 类型大小???????????????
 	Active     bool      `orm:"default(false)"`
+	Status     bool      `orm:"default(false)"`
+	Email      string    `orm:"size(100)"`
 	CreateTime time.Time `orm:"auto_now_add;type(datetime)"` // frist save,record time
 }
 
@@ -24,7 +26,7 @@ func init() {
 	user := new(User)
 	orm.RegisterDataBase("default", "mysql", "root:123456@tcp(192.168.34.139)/bbs?charset=utf8&loc=Asia%2FShanghai", 30) //set database url and time zone
 	orm.RegisterModel(user)
-	orm.RunSyncdb("default", false, false) // begin create table
+	orm.RunSyncdb("default", false, false) // begin create table?????函数参数作用
 
 	user.CreateDefaultUser()
 
@@ -35,17 +37,18 @@ func (u *User) TableName() string {
 	return "user"
 }
 
-func (u *User) Signup(username, password string) (bool, error) {
-	if u.ExsitUser(username) {
+func (u *User) Signup(userInfo *User) (bool, error) {
+	if u.ExsitUser(userInfo.Name) {
 		return false, fmt.Errorf("%s", types.UsernameExErr)
 	}
 
-	user := new(User)
-	user.Name = username
-	user.Password = password
+	// user := new(User)
+	// user.Name = username
+	// user.Password = password
+	// user.Email = email
 
 	o := orm.NewOrm()
-	_, err := o.Insert(user)
+	_, err := o.Insert(userInfo)
 	if err != nil {
 		return false, err
 	}
