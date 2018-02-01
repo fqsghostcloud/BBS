@@ -28,7 +28,7 @@ func (s *SignupController) Post() {
 	dbUser.Password = password
 	dbUser.Email = email
 
-	ok, err := dbUser.Signup(&dbUser)
+	err := dbUser.Signup(&dbUser)
 	if err != nil {
 		if err.Error() == types.UsernameExErr {
 			data["info"] = err.Error()
@@ -42,10 +42,9 @@ func (s *SignupController) Post() {
 		return
 	}
 
-	if ok {
-		data["info"] = "注册成功!"
-		glog.Infoln(data["info"])
-		s.ServerOk(data)
-	}
+	data["info"] = "注册成功!"
+	glog.Infoln(data["info"])
+	s.ServerOk(data)
+
 	return
 }

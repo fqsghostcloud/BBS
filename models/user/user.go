@@ -37,23 +37,46 @@ func (u *User) TableName() string {
 	return "user"
 }
 
-func (u *User) Signup(userInfo *User) (bool, error) {
+func (u *User) Signup(userInfo *User) error {
 	if u.ExsitUser(userInfo.Name) {
-		return false, fmt.Errorf("%s", types.UsernameExErr)
+		return fmt.Errorf("%s", types.UsernameExErr)
 	}
-
-	// user := new(User)
-	// user.Name = username
-	// user.Password = password
-	// user.Email = email
 
 	o := orm.NewOrm()
 	_, err := o.Insert(userInfo)
 	if err != nil {
-		return false, err
+		return err
 	}
 
-	return true, nil
+	return nil
+}
+
+func (u *User) DelUser(userInfo *User) error {
+	if u.ExsitUser(userInfo.Name) {
+		return fmt.Errorf("%s", types.UsernameExErr)
+	}
+
+	o := orm.NewOrm()
+	_, err := o.Delete(userInfo)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (u *User) UpdateUser(userInfo *User) error {
+	if u.ExsitUser(userInfo.Name) {
+		return fmt.Errorf("%s", types.UsernameExErr)
+	}
+
+	o := orm.NewOrm()
+	_, err := o.Update(userInfo)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // Auth is check username and auth password
@@ -94,6 +117,11 @@ func (u *User) IsActive(username string) (bool, error) {
 	}
 
 	return user.Active == true, nil
+}
+
+// GetUserInfo 获取用户详细信息或者模糊信息(username,isDetail)
+func (u *User) GetUserInfo(username string, isDetail bool) {
+
 }
 
 func (u *User) GetByUsername(username string) (*User, error) {
