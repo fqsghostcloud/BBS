@@ -12,7 +12,7 @@ import (
 )
 
 type User struct {
-	Id         int       `orm:"pk;auto"`
+	ID         int       `orm:"pk;auto"`
 	Name       string    `orm:"unique;size(100)"`
 	Password   string    `orm:"size(100)"` // 类型大小???????????????
 	Active     bool      `orm:"default(false)"`
@@ -24,7 +24,7 @@ type User struct {
 func init() {
 	// orm.RegisterDriver("mysql", orm.DRMySQL) mysql auto regist
 	user := new(User)
-	orm.RegisterDataBase("default", "mysql", "root:123456@tcp(192.168.34.139)/bbs?charset=utf8&loc=Asia%2FShanghai", 30) //set database url and time zone
+	orm.RegisterDataBase("default", "mysql", "root:123456@tcp(192.168.34.140)/bbs?charset=utf8&loc=Asia%2FShanghai", 30) //set database url and time zone
 	orm.RegisterModel(user)
 	orm.RunSyncdb("default", false, false) // begin create table?????函数参数作用
 

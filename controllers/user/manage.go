@@ -13,13 +13,12 @@ type ManageController struct {
 	controllers.BaseController
 }
 
-
 //Get user info 精准查找/模糊查找
 func (m *ManageController) Get() {
-	username := m.GetString("username")
+	// username := m.GetString("username")
 
-	dbUser := user.User{}
-	data := map[string]int{}{}
+	// dbUser := user.User{}
+	// data := map[string]interface{}{}
 }
 
 // Put modify user Info

@@ -19,6 +19,7 @@ func (c *LoginController) Get() {
 
 }
 
+// @router /login [post]
 func (c *LoginController) Post() {
 	username := c.GetString("username")
 	password := c.GetString("password")

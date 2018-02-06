@@ -17,6 +17,7 @@ func (s *SignupController) Get() {
 
 }
 
+// @router /signup [post]
 func (s *SignupController) Post() {
 	username := s.GetString("username")
 	password := s.GetString("password")
