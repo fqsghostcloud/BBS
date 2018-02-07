@@ -53,16 +53,15 @@ func (u *User) Signup(userInfo *User) error {
 
 func (u *User) DelUser(userInfo *User) error {
 	if u.ExsitUser(userInfo.Name) {
-		return fmt.Errorf("%s", types.UsernameExErr)
+		o := orm.NewOrm()
+		_, err := o.Delete(userInfo)
+		if err != nil {
+			return err
+		}
+		return nil
 	}
 
-	o := orm.NewOrm()
-	_, err := o.Delete(userInfo)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return fmt.Errorf(types.UserNotExsit)
 }
 
 func (u *User) UpdateUser(userInfo *User) error {
@@ -122,6 +121,25 @@ func (u *User) IsActive(username string) (bool, error) {
 // GetUserInfo 获取用户详细信息或者模糊信息(username,isDetail)
 func (u *User) GetUserInfo(username string, isDetail bool) {
 
+}
+
+// FuzzySearch 模糊查找返回匹配的用户
+func (u *User) FuzzySearch(littleName string) (*[]User, error) {
+	user := []User{}
+
+	o := orm.NewOrm()
+	qs := o.QueryTable(u.TableName())
+	_, err := qs.Filter("Name__icontains", littleName).All(&user)
+	if err != nil {
+		return nil, err
+	}
+
+	return &user, nil
+}
+
+// Search 精准查找返回用户公开信息
+func (u *User) Search(username string) (*User, error) {
+	return u.GetByUsername(username)
 }
 
 func (u *User) GetByUsername(username string) (*User, error) {
