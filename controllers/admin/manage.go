@@ -4,6 +4,7 @@ import (
 	"bbs/controllers"
 	"bbs/models/types"
 	"bbs/models/user"
+	"fmt"
 	"net/http"
 
 	"github.com/golang/glog"
@@ -96,6 +97,49 @@ func (m *ManageController) Search() {
 	}
 
 	data["info"] = userInfo
+	m.ServerOk(data)
+	return
+}
+
+// Active active user
+// @router /admin/activeuser [post]
+func (m *ManageController) Active() {
+	username := m.GetString("username")
+	data := map[string]interface{}{}
+
+	dbUser := user.User{}
+
+	err := dbUser.ActiveUser(username)
+	if err != nil {
+		data["error"] = err.Error()
+		glog.Errorf("active user error:[%s]", err.Error())
+		m.ServerError(data, http.StatusBadRequest)
+		return
+	}
+
+	data["info"] = fmt.Sprintf("active user[%s] success", username)
+	glog.Infoln(data["info"])
+	m.ServerOk(data)
+	return
+}
+
+// Inactive inactive user
+// @router /admin/inactiveuser [post]
+func (m *ManageController) Inactive() {
+	username := m.GetString("username")
+	data := map[string]interface{}{}
+	dbUser := user.User{}
+
+	err := dbUser.InactiveUser(username)
+	if err != nil {
+		data["error"] = err.Error()
+		glog.Errorf("inactive user[%s] error[%s]", username, err.Error())
+		m.ServerError(data, http.StatusBadRequest)
+		return
+	}
+
+	data["info"] = fmt.Sprintf("inactive user[%s] success", username)
+	glog.Infoln(data["info"])
 	m.ServerOk(data)
 	return
 }

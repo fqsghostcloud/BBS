@@ -37,6 +37,43 @@ func (u *User) TableName() string {
 	return "user"
 }
 
+// ExsitUser check user whether exsit
+func (u *User) ExsitUser(username string) bool {
+	o := orm.NewOrm()
+	qs := o.QueryTable(u.TableName())
+	return qs.Filter("Name", username).Exist()
+}
+
+// GetByUsername get user by username
+func (u *User) GetByUsername(username string) (*User, error) {
+	var user User
+	o := orm.NewOrm()
+	qs := o.QueryTable(u.TableName())
+	err := qs.Filter("Name", username).One(&user)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &user, nil
+}
+
+// IsActive check user whether activve
+func (u *User) IsActive(username string) (bool, error) {
+	user := new(User)
+
+	o := orm.NewOrm()
+	qs := o.QueryTable(u.TableName())
+	err := qs.Filter("Name", username).One(user)
+
+	if err != nil {
+		return false, err
+	}
+
+	return user.Active == true, nil
+}
+
+// Signup ..
 func (u *User) Signup(userInfo *User) error {
 	if u.ExsitUser(userInfo.Name) {
 		return fmt.Errorf("%s", types.UsernameExErr)
@@ -51,6 +88,7 @@ func (u *User) Signup(userInfo *User) error {
 	return nil
 }
 
+// DelUser ..
 func (u *User) DelUser(userInfo *User) error {
 	if u.ExsitUser(userInfo.Name) {
 		o := orm.NewOrm()
@@ -64,6 +102,7 @@ func (u *User) DelUser(userInfo *User) error {
 	return fmt.Errorf(types.UserNotExsit)
 }
 
+// UpdateUser ..
 func (u *User) UpdateUser(userInfo *User) error {
 	if u.ExsitUser(userInfo.Name) {
 		return fmt.Errorf("%s", types.UsernameExErr)
@@ -76,6 +115,68 @@ func (u *User) UpdateUser(userInfo *User) error {
 	}
 
 	return nil
+}
+
+// ActiveUser active user
+func (u *User) ActiveUser(username string) error {
+	if !u.ExsitUser(username) {
+		return fmt.Errorf("%s", types.UserNotExsit)
+	}
+
+	o := orm.NewOrm()
+
+	isActive, err := u.IsActive(username)
+	if err != nil {
+		return err
+	}
+
+	if isActive {
+		err := fmt.Errorf("user[%s] already active", username)
+		glog.Infof(err.Error())
+
+		return err
+	}
+
+	qs := o.QueryTable(u.TableName())
+	_, err = qs.Filter("Name", username).Update(orm.Params{"Active": true})
+	if err != nil {
+		return err
+	}
+	glog.Infof("active user[%s] success\n", username)
+
+	return nil
+}
+
+// InactiveUser inactive user
+func (u *User) InactiveUser(username string) error {
+	if !u.ExsitUser(username) {
+		return fmt.Errorf("%s", types.UserNotExsit)
+	}
+
+	isActive, err := u.IsActive(username)
+	if err != nil {
+		return err
+	}
+
+	if !isActive {
+		err := fmt.Errorf("user[%s] already inactive", username)
+		return err
+	}
+
+	o := orm.NewOrm()
+	qs := o.QueryTable(u.TableName())
+
+	_, err = qs.Filter("Name", username).Update(orm.Params{"Active": false})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// AuthPassword ..
+func (u *User) AuthPassword(user *User, password string) bool {
+	return user.Password == password
 }
 
 // Auth is check username and auth password
@@ -100,29 +201,6 @@ func (u *User) Auth(username, password string) (bool, error) {
 
 }
 
-func (u *User) AuthPassword(user *User, password string) bool {
-	return user.Password == password
-}
-
-func (u *User) IsActive(username string) (bool, error) {
-	user := new(User)
-
-	o := orm.NewOrm()
-	qs := o.QueryTable(u.TableName())
-	err := qs.Filter("Name", username).One(user)
-
-	if err != nil {
-		return false, err
-	}
-
-	return user.Active == true, nil
-}
-
-// GetUserInfo 获取用户详细信息或者模糊信息(username,isDetail)
-func (u *User) GetUserInfo(username string, isDetail bool) {
-
-}
-
 // FuzzySearch 模糊查找返回匹配的用户
 func (u *User) FuzzySearch(littleName string) (*[]User, error) {
 	user := []User{}
@@ -140,25 +218,6 @@ func (u *User) FuzzySearch(littleName string) (*[]User, error) {
 // Search 精准查找返回用户公开信息
 func (u *User) Search(username string) (*User, error) {
 	return u.GetByUsername(username)
-}
-
-func (u *User) GetByUsername(username string) (*User, error) {
-	var user User
-	o := orm.NewOrm()
-	qs := o.QueryTable(u.TableName())
-	err := qs.Filter("Name", username).One(&user)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return &user, nil
-}
-
-func (u *User) ExsitUser(username string) bool {
-	o := orm.NewOrm()
-	qs := o.QueryTable(u.TableName())
-	return qs.Filter("Name", username).Exist()
 }
 
 // CreateDefaultUser create test account
