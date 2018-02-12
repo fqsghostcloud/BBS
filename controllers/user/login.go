@@ -19,8 +19,9 @@ func (c *LoginController) Get() {
 
 }
 
-// @router /login [post]
-func (c *LoginController) Post() {
+// Login ..
+// @router /user/login [post]
+func (c *LoginController) Login() {
 	username := c.GetString("username")
 	password := c.GetString("password")
 
@@ -45,7 +46,7 @@ func (c *LoginController) Post() {
 	}
 
 	if ok {
-		glog.Infof("login success username[%s]\n", username)
+		glog.Infof("login success user[%s]\n", username)
 		data["info"] = "登录成功"
 		// use session
 		c.SetSession("isLogin", true)

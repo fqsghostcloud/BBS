@@ -5,12 +5,15 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/astaxie/beego"
+
 	"github.com/golang/glog"
 
-	"github.com/astaxie/beego/orm"
+	"github.com/astaxie/beego/orm"     // check signup email
 	_ "github.com/go-sql-driver/mysql" // import mysql driver
 )
 
+// User ..
 type User struct {
 	ID         int       `orm:"pk;auto"`
 	Name       string    `orm:"unique;size(100)"`
@@ -24,7 +27,7 @@ type User struct {
 func init() {
 	// orm.RegisterDriver("mysql", orm.DRMySQL) mysql auto regist
 	user := new(User)
-	orm.RegisterDataBase("default", "mysql", "root:123456@tcp(192.168.34.140)/bbs?charset=utf8&loc=Asia%2FShanghai", 30) //set database url and time zone
+	orm.RegisterDataBase("default", "mysql", beego.AppConfig.String("mysqlurl"), 30) //set database url and time zone
 	orm.RegisterModel(user)
 	orm.RunSyncdb("default", false, false) // begin create table?????函数参数作用
 
@@ -42,6 +45,13 @@ func (u *User) ExsitUser(username string) bool {
 	o := orm.NewOrm()
 	qs := o.QueryTable(u.TableName())
 	return qs.Filter("Name", username).Exist()
+}
+
+// ExsitEmail check user email whether exsit
+func (u *User) ExsitEmail(email string) bool {
+	o := orm.NewOrm()
+	qs := o.QueryTable(u.TableName())
+	return qs.Filter("Email", email).Exist()
 }
 
 // GetByUsername get user by username
@@ -79,6 +89,10 @@ func (u *User) Signup(userInfo *User) error {
 		return fmt.Errorf("%s", types.UsernameExErr)
 	}
 
+	if u.ExsitEmail(userInfo.Email) {
+		return fmt.Errorf("%s", "此邮箱已经注册")
+	}
+
 	o := orm.NewOrm()
 	_, err := o.Insert(userInfo)
 	if err != nil {
@@ -110,6 +124,50 @@ func (u *User) UpdateUser(userInfo *User) error {
 
 	o := orm.NewOrm()
 	_, err := o.Update(userInfo)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// GetUserByEmail ..
+func (u *User) GetUserByEmail(email string) (string, error) {
+	o := orm.NewOrm()
+	user := new(User)
+	qs := o.QueryTable(u.TableName())
+	err := qs.Filter("Email", email).One(user)
+	if err != nil {
+		return "", err
+	}
+
+	return user.Name, nil
+
+}
+
+// ActiveUserByEmail ..
+func (u *User) ActiveUserByEmail(email string) error {
+	username, err := u.GetUserByEmail(email)
+	if err != nil {
+		return err
+	}
+
+	err = u.ActiveUser(username)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// InactiveUserByEmail ..
+func (u *User) InactiveUserByEmail(email string) error {
+	username, err := u.GetUserByEmail(email)
+	if err != nil {
+		return err
+	}
+
+	err = u.InactiveUser(username)
 	if err != nil {
 		return err
 	}
