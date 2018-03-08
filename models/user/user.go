@@ -13,6 +13,27 @@ import (
 	_ "github.com/go-sql-driver/mysql" // import mysql driver
 )
 
+// Manager user api
+type Manager interface {
+	Signup(userInfo *User) error
+	DelUser(userInfo *User) error
+	UpdateUser(userInfo *User) error
+	GetByUsername(username string) (*User, error)
+	GetUserByEmail(email string) (string, error) //get username
+	ExsitUser(username string) bool
+	ExsitEmail(email string) bool
+	FuzzySearch(littleName string) (*[]User, error) //模糊查找
+	Search(username string) (*User, error)          // 精确查找
+
+	ActiveUser(username string) error
+	InactiveUser(username string) error
+	IsActive(username string) (bool, error)
+	ActiveUserByEmail(email string) error
+	InactiveUserByEmail(email string) error
+
+	AuthPassword(user *User, password string) bool
+}
+
 // User ..
 type User struct {
 	ID         int       `orm:"pk;auto"`
