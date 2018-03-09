@@ -12,16 +12,16 @@ type BaseController struct {
 	beego.Controller
 }
 
-var manager models.Manager
+// Manager all model manager
+var Manager models.Manager
 
 func init() {
-	manager = models.NewManager()
+	Manager = models.NewManager()
 }
 
 // ServerOk if everything is ok ,record to do what and result
 func (b *BaseController) ServerOk(msg map[string]interface{}) {
 	b.Data["json"] = msg // set msg to clinet json
-
 	b.Ctx.ResponseWriter.WriteHeader(http.StatusOK)
 	b.ServeJSON()
 }
@@ -30,7 +30,6 @@ func (b *BaseController) ServerOk(msg map[string]interface{}) {
 func (b *BaseController) ServerError(msg map[string]interface{}, code int) {
 	msg["code"] = code
 	b.Data["json"] = msg // se msg to client json
-
 	b.Ctx.ResponseWriter.WriteHeader(code)
 	b.ServeJSON()
 }

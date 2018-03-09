@@ -19,17 +19,13 @@ func (m *ManageController) Get() {
 
 }
 
-//Delete user
+//DeleteUser user
 // @router /admin/delete [post]
-func (m *ManageController) Delete() {
+func (m *ManageController) DeleteUser() {
 	username := m.GetString("username")
-
 	data := map[string]interface{}{}
-	dbUser := user.User{}
 
-	dbUser.Name = username
-
-	err := dbUser.DelUser(&dbUser)
+	err := controllers.Manager.DelUser(&user.User{Name: username})
 	if err != nil {
 		if err.Error() == types.UserNotExsit {
 			data["info"] = err.Error()
@@ -49,67 +45,13 @@ func (m *ManageController) Delete() {
 	return
 }
 
-// FuzzySearch search user by fuzzy name
-// @router /admin/fsearch [post]
-func (m *ManageController) FuzzySearch() {
-	username := m.GetString("username")
-	data := map[string]interface{}{}
-	dbUser := user.User{}
-
-	users, err := dbUser.FuzzySearch(username)
-	if err != nil {
-		glog.Errorf("fuzzy search error:[%s]", err.Error())
-		data["error"] = types.Error
-		m.ServerError(data, http.StatusBadRequest)
-		return
-	}
-
-	if len(*users) == 0 {
-		data["info"] = types.DataNotExsit
-		m.ServerOk(data)
-		return
-	}
-
-	data["info"] = users
-	m.ServerOk(data)
-	return
-
-}
-
-// Search search user info
-// @router /admin/search [post]
-func (m *ManageController) Search() {
-	username := m.GetString("username")
-	data := map[string]interface{}{}
-	dbUser := user.User{}
-
-	userInfo, err := dbUser.Search(username)
-	if err != nil {
-		if err.Error() == types.RowNotFound {
-			data["info"] = types.DataNotExsit
-			m.ServerOk(data)
-		} else {
-			glog.Errorf("search user error:[%s]", err.Error())
-			data["error"] = types.Error
-			m.ServerError(data, http.StatusBadRequest)
-		}
-		return
-	}
-
-	data["info"] = userInfo
-	m.ServerOk(data)
-	return
-}
-
 // Active active user
 // @router /admin/activeuser [post]
 func (m *ManageController) Active() {
 	username := m.GetString("username")
 	data := map[string]interface{}{}
 
-	dbUser := user.User{}
-
-	err := dbUser.ActiveUser(username)
+	err := controllers.Manager.ActiveUser(username)
 	if err != nil {
 		data["error"] = err.Error()
 		glog.Errorf("active user error:[%s]", err.Error())
@@ -117,20 +59,18 @@ func (m *ManageController) Active() {
 		return
 	}
 
-	data["info"] = fmt.Sprintf("active user[%s] success", username)
-	glog.Infoln(data["info"])
+	data["info"] = fmt.Sprintf("激活用户[%s]成功\n", username)
 	m.ServerOk(data)
 	return
 }
 
-// Inactive inactive user
-// @router /admin/inactiveuser [post]
-func (m *ManageController) Inactive() {
+// Deactive inactive user
+// @router /admin/deactiveuser [post]
+func (m *ManageController) Deactive() {
 	username := m.GetString("username")
 	data := map[string]interface{}{}
-	dbUser := user.User{}
 
-	err := dbUser.InactiveUser(username)
+	err := controllers.Manager.DeactiveUser(username)
 	if err != nil {
 		data["error"] = err.Error()
 		glog.Errorf("inactive user[%s] error[%s]", username, err.Error())
@@ -138,7 +78,7 @@ func (m *ManageController) Inactive() {
 		return
 	}
 
-	data["info"] = fmt.Sprintf("inactive user[%s] success", username)
+	data["info"] = fmt.Sprintf("冻结用户[%s]成功\n", username)
 	glog.Infoln(data["info"])
 	m.ServerOk(data)
 	return

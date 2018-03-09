@@ -15,10 +15,11 @@ import (
 
 // Manager user api
 type Manager interface {
-	Signup(userInfo *User) error
-	DelUser(userInfo *User) error
+	Auth(username, password string) (bool, error)
+	AddUser(userInfo *User) error
+	Delete(userInfo *User) error
 	UpdateUser(userInfo *User) error
-	GetByUsername(username string) (*User, error)
+	GetUserByName(username string) (*User, error)
 	GetUserByEmail(email string) (string, error) //get username
 	ExsitUser(username string) bool
 	ExsitEmail(email string) bool
@@ -26,7 +27,7 @@ type Manager interface {
 	Search(username string) (*User, error)          // 精确查找
 
 	ActiveUser(username string) error
-	InactiveUser(username string) error
+	DeactiveUser(username string) error
 	IsActive(username string) (bool, error)
 	ActiveUserByEmail(email string) error
 	InactiveUserByEmail(email string) error
@@ -56,6 +57,17 @@ func init() {
 
 }
 
+var singleManager Manager
+
+// NewManager .
+func NewManager() Manager {
+	if singleManager != nil {
+		return singleManager
+	}
+	singleManager = new(User)
+	return singleManager
+}
+
 // TableName define database table name
 func (u *User) TableName() string {
 	return "user"
@@ -75,8 +87,8 @@ func (u *User) ExsitEmail(email string) bool {
 	return qs.Filter("Email", email).Exist()
 }
 
-// GetByUsername get user by username
-func (u *User) GetByUsername(username string) (*User, error) {
+// GetUserByName get user by username
+func (u *User) GetUserByName(username string) (*User, error) {
 	var user User
 	o := orm.NewOrm()
 	qs := o.QueryTable(u.TableName())
@@ -104,8 +116,8 @@ func (u *User) IsActive(username string) (bool, error) {
 	return user.Active == true, nil
 }
 
-// Signup ..
-func (u *User) Signup(userInfo *User) error {
+// AddUser .
+func (u *User) AddUser(userInfo *User) error {
 	if u.ExsitUser(userInfo.Name) {
 		return fmt.Errorf("%s", types.UsernameExErr)
 	}
@@ -123,8 +135,8 @@ func (u *User) Signup(userInfo *User) error {
 	return nil
 }
 
-// DelUser ..
-func (u *User) DelUser(userInfo *User) error {
+// Delete delete user ..
+func (u *User) Delete(userInfo *User) error {
 	if u.ExsitUser(userInfo.Name) {
 		o := orm.NewOrm()
 		_, err := o.Delete(userInfo)
@@ -188,7 +200,7 @@ func (u *User) InactiveUserByEmail(email string) error {
 		return err
 	}
 
-	err = u.InactiveUser(username)
+	err = u.DeactiveUser(username)
 	if err != nil {
 		return err
 	}
@@ -226,8 +238,8 @@ func (u *User) ActiveUser(username string) error {
 	return nil
 }
 
-// InactiveUser inactive user
-func (u *User) InactiveUser(username string) error {
+// DeactiveUser inactive user
+func (u *User) DeactiveUser(username string) error {
 	if !u.ExsitUser(username) {
 		return fmt.Errorf("%s", types.UserNotExsit)
 	}
@@ -260,7 +272,7 @@ func (u *User) AuthPassword(user *User, password string) bool {
 
 // Auth is check username and auth password
 func (u *User) Auth(username, password string) (bool, error) {
-	user, err := u.GetByUsername(username)
+	user, err := u.GetUserByName(username)
 	if err != nil {
 		glog.Errorf("get by username error[%s]", err.Error())
 		return false, err
@@ -296,7 +308,7 @@ func (u *User) FuzzySearch(littleName string) (*[]User, error) {
 
 // Search 精准查找返回用户公开信息
 func (u *User) Search(username string) (*User, error) {
-	return u.GetByUsername(username)
+	return u.GetUserByName(username)
 }
 
 // CreateDefaultUser create test account

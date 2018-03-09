@@ -12,6 +12,7 @@ import (
 
 var authEmail *user.Email
 
+// SignupController .
 type SignupController struct {
 	controllers.BaseController
 }
@@ -28,21 +29,21 @@ func (s *SignupController) Signup() {
 	email := s.GetString("email")
 
 	data := map[string]interface{}{}
-	dbUser := user.User{}
+
 	authEmail = new(user.Email)
 
-	dbUser.Name = username
-	dbUser.Password = password
-	dbUser.Email = email
-
-	err := dbUser.Signup(&dbUser)
+	err := controllers.Manager.SignUp(&user.User{
+		Name:     username,
+		Password: password,
+		Email:    email,
+	})
 	if err != nil {
 		if err.Error() == types.UsernameExErr {
 			data["info"] = err.Error()
 			s.ServerOk(data)
 			glog.Infof("signup info[%s]", err.Error())
 		} else {
-			data["error"] = err.Error()
+			data["error"] = "注册失败，请联系管理员"
 			s.ServerError(data, http.StatusInternalServerError)
 			glog.Errorf("signup error[%s]", err.Error())
 		}
@@ -86,8 +87,7 @@ func (s *SignupController) ActiveAccount() {
 		isAccess, email := authEmail.CheckEmailURL(token)
 
 		if isAccess {
-			dbUser := user.User{}
-			err := dbUser.ActiveUserByEmail(email)
+			err := controllers.Manager.ActiveAccount(email)
 			if err != nil {
 				glog.Errorf("active user by email error[%s]\n", err.Error())
 				data["error"] = err.Error()

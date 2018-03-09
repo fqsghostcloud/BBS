@@ -17,32 +17,16 @@ func init() {
 
 	beego.GlobalControllerRouter["bbs/controllers/admin:ManageController"] = append(beego.GlobalControllerRouter["bbs/controllers/admin:ManageController"],
 		beego.ControllerComments{
-			Method: "Delete",
+			Method: "Deactive",
+			Router: `/admin/deactiveuser`,
+			AllowHTTPMethods: []string{"post"},
+			MethodParams: param.Make(),
+			Params: nil})
+
+	beego.GlobalControllerRouter["bbs/controllers/admin:ManageController"] = append(beego.GlobalControllerRouter["bbs/controllers/admin:ManageController"],
+		beego.ControllerComments{
+			Method: "DeleteUser",
 			Router: `/admin/delete`,
-			AllowHTTPMethods: []string{"post"},
-			MethodParams: param.Make(),
-			Params: nil})
-
-	beego.GlobalControllerRouter["bbs/controllers/admin:ManageController"] = append(beego.GlobalControllerRouter["bbs/controllers/admin:ManageController"],
-		beego.ControllerComments{
-			Method: "FuzzySearch",
-			Router: `/admin/fsearch`,
-			AllowHTTPMethods: []string{"post"},
-			MethodParams: param.Make(),
-			Params: nil})
-
-	beego.GlobalControllerRouter["bbs/controllers/admin:ManageController"] = append(beego.GlobalControllerRouter["bbs/controllers/admin:ManageController"],
-		beego.ControllerComments{
-			Method: "Inactive",
-			Router: `/admin/inactiveuser`,
-			AllowHTTPMethods: []string{"post"},
-			MethodParams: param.Make(),
-			Params: nil})
-
-	beego.GlobalControllerRouter["bbs/controllers/admin:ManageController"] = append(beego.GlobalControllerRouter["bbs/controllers/admin:ManageController"],
-		beego.ControllerComments{
-			Method: "Search",
-			Router: `/admin/search`,
 			AllowHTTPMethods: []string{"post"},
 			MethodParams: param.Make(),
 			Params: nil})

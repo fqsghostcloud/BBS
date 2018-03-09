@@ -3,7 +3,6 @@ package user
 import (
 	"bbs/controllers"
 	"bbs/models/types"
-	"bbs/models/user"
 	"net/http"
 
 	"github.com/astaxie/beego/orm"
@@ -26,9 +25,8 @@ func (c *LoginController) Login() {
 	password := c.GetString("password")
 
 	data := map[string]interface{}{}
-	dbUser := user.User{}
 
-	ok, err := dbUser.Auth(username, password)
+	ok, err := controllers.Manager.Login(username, password)
 	if err != nil {
 		if err == orm.ErrNoRows {
 			data["info"] = "用户不存在"

@@ -12,15 +12,6 @@ import (
 	"github.com/golang/glog"
 )
 
-// EmailAPI .
-type EmailAPI interface {
-	InitSendCfg(recAddr, recName string) error
-	generateEmailAuthToken(email string) string
-	CheckEmailURL(token string) (bool, string)
-	GenerateAuthURL(email string) string
-	SendEmail() error
-}
-
 // Email to send email
 type Email struct {
 	senderAddr string

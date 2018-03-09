@@ -15,6 +15,14 @@ func init() {
 			MethodParams: param.Make(),
 			Params: nil})
 
+	beego.GlobalControllerRouter["bbs/controllers/user:ManageController"] = append(beego.GlobalControllerRouter["bbs/controllers/user:ManageController"],
+		beego.ControllerComments{
+			Method: "SearchUser",
+			Router: `/user/search`,
+			AllowHTTPMethods: []string{"post"},
+			MethodParams: param.Make(),
+			Params: nil})
+
 	beego.GlobalControllerRouter["bbs/controllers/user:SignupController"] = append(beego.GlobalControllerRouter["bbs/controllers/user:SignupController"],
 		beego.ControllerComments{
 			Method: "ActiveAccount",
